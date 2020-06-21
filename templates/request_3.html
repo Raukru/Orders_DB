@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Запрос 3</title>
+</head>
+<body bgcolor = #d3d5db text = #212224>
+<h1 align=center>Все сведения о самом молодом официанте</h1>
+<table align=center border=1 width=50%>
+    <tr>
+        <th>ID Официанта</th>
+        <th>Фамилия</th>
+        <th>Паспорт</th>
+        <th>Дата принятия на работу</th>
+        <th>Дата увольнения</th>
+    </tr>
+    {% for row in result %}
+    <tr>
+        <td align=center>{{ row[0] }}</td>
+        <td align=center>{{ row[1] }}</td>
+        <td align=center>{{ row[2] }}</td>
+        <td align=center>{{ row[3] }}</td>
+        <td align=center>{{ row[4] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<form action="/">
+    <input type=submit name=back1 value='Назад в меню'><br><br>
+</form>
+<input type=submit value="Выход" onclick="self.close()"><br><br>
+</body>
+</html>
