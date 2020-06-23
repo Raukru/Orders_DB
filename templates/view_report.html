@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Просмотр отчета</title>
+</head>
+<body bgcolor = #d3d5db text = #212224>
+<h1 align=center>Отчет о количестве заказанных блюд за {{year}}-{{month}}</h1>
+<table align=center border=1 width=50%>
+    <tr>
+        <th>Название</th>
+        <th>Количество заказов</th>
+    </tr>
+    {% for row in result %}
+    <tr>
+        <td align=center>{{ row[4] }}</td>
+        <td align=center>{{ row[5] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<form action="/create_report">
+    <input type=submit name=back_to_create value='Создание отчетов'><br><br>
+</form>
+<form action="/choice_report">
+    <input type=submit name=back_to_choice value='Выбор отчета'><br><br>
+</form>
+<form action="/">
+    <input type=submit name=back_to_menu value='Назад в меню'><br><br>
+</form>
+<input type=submit value="Выход" onclick="self.close()"><br><br>
+</body>
+</html>

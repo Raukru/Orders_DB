@@ -2,18 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Создание отчета</title>
+    <title>Выбор отчета</title>
 </head>
 <body bgcolor = #d3d5db text = #212224>
-<h1 align=center>Создание отчета о количестве заказанных блюд</h1>
+<h1 align=center>Выбор отчета о количестве заказанных блюд для просмотра</h1>
     <form action="/">
         <input type=submit name=back1 value='Назад в меню'><br>
     </form>
-    <form action="/choice_report">
-        <input type=submit name=back_to_choice value='Выбор отчета'><br><br>
+    <form action="/create_report">
+        <input type=submit name=back_to_create value='Создание отчетов'><br><br>
     </form>
     <input type=submit value="Выход" onclick="self.close()"><br><br>
-    <form action ="/create_report" method=POST>
+    <form action ="/view_report" method=POST>
     <table align=center border=0 width=80%>
         <tbody>
         <tr>
@@ -32,11 +32,10 @@
         <tbody>
             <tr>
                 <td align=center> <input type=reset value= Очистить > </td>
-                <td align=center> <input type=submit name=send value=Создать> </td>
+                <td align=center> <input type=submit name=send value=Просмотреть> </td>
             </tr>
         </tbody>
         </table>
-        <h3 align=center>{{ message }}</h3>
     </form>
 </body>
 </html>
