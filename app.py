@@ -38,7 +38,6 @@ FROM `Order_line` JOIN `Menu` USING (id_menu) JOIN `Order` USING (id_order)
 WHERE (MONTH(Date_accept)=04) AND (YEAR(Date_accept)=2017);"""
 
 __SQL_proc = """
-delimiter //
 CREATE DEFINER=`root`@`localhost` PROCEDURE `Blydo`(o_year integer,o_month integer)
 BEGIN
 DECLARE id_otc,kolvo_z,AAA integer;
@@ -68,8 +67,7 @@ SELECT "Otchet uspeshno sozdan";
 END;
 ELSE SELECT "Otchet uzhe sushestvuet";
 END IF;
-END //
-delimiter ;
+END;
 
 """
 
@@ -85,8 +83,14 @@ def bd_connect(usr=__user, passw=__password):
 def sql_request(sql:str):
     conn = bd_connect()
     cursor = conn.cursor()
-    cursor.execute(sql)
-    result = cursor.fetchall()
+    try:
+        cursor.execute(sql)
+        result = cursor.fetchall()
+    except:
+        print("SQL request error")
+        result = None
+    conn.close()
+    cursor.close()
     conn.disconnect()
     return result
 
@@ -156,19 +160,26 @@ def create_report():
         month = request.form['month']
         conn = bd_connect()
         cursor = conn.cursor()
-        #try:
-            #cursor.execute(__SQL_proc)
-        #finally:
-        for res in cursor.execute("call Blydo({}, {});".format(year, month), multi=True):
-            for row in res:
-                print(row[0])
+        try:
+            cursor.execute("""CREATE TABLE otch1 (nul VARCHAR(20), id INT NOT NULL,
+s_year INT NOT NULL, s_month INT NOT NULL, 
+name VARCHAR(45) NOT NULL, count INT NOT NULL);""")
+        except:
+            pass
+        try:
+            cursor.execute(__SQL_proc)
+        except:
+            pass
+        try:
+            for res in cursor.execute("call Blydo({}, {});".format(year, month), multi=True):
+                for row in res:
+                    print(row[0])
+        except:
+            return "Can't call procedure with arguments '{}' and '{}'".format(year, month)
         conn.commit()
         conn.close()
         cursor.close()
         conn.disconnect()
-        print("Posted - {}-{}".format(year, month))
-    else:
-        print("Get")
     return render_template("create_report.html")
 
 
@@ -188,8 +199,11 @@ def view_report():
     if request.method == 'POST':
         year = request.form['year']
         month = request.form['month']
-        result = sql_request("""select * from otch1 where `s_year`={} AND `s_month`={};""".format(year, month))
-        print("Posted - {}-{}".format(year, month))
+        try:
+            result = sql_request("""select * from otch1 where `s_year`={} AND `s_month`={};""".format(year, month))
+        except:
+            result = "None"
+            return "Report doesn't exist"
     return render_template("view_report.html", result=result, year=year, month=month)
 
 if __name__ == "__main__":
