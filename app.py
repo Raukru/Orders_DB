@@ -9,6 +9,7 @@ __password = "bobZx8000"
 __database_name = 'mybd'
 __host = '127.0.0.1'
 
+# SQL запросы
 __SQL_r1 = """SELECT  `id_menu`, `Name`, SUM(Sum), `Menu`.`Price`*SUM(Sum)
 FROM `Order` JOIN  `Order_line` USING (id_order) JOIN `Menu` USING (id_menu)
 WHERE (MONTH(Date_accept)=03) AND (YEAR(Date_accept)=2017)
@@ -72,6 +73,7 @@ END;
 """
 
 
+# Функция для соединения с БД
 def bd_connect(usr=__user, passw=__password):
     try:
         conn = mysql.connector.connect(user=usr, password=passw, host=__host, database=__database_name)
@@ -80,35 +82,29 @@ def bd_connect(usr=__user, passw=__password):
     return conn
 
 
-def sql_request(sql:str):
-    conn = bd_connect()
-    cursor = conn.cursor()
+# Функция для выполнения запроса. Возвращает список - результат SQL запроса
+def sql_request(sql: str):
+    conn = bd_connect()  # Выполняем соединение с БД. conn - содержит объект соединения
+    cursor = conn.cursor()  # Создаем курсор для выполнения запросов к БД
     try:
-        cursor.execute(sql)
-        result = cursor.fetchall()
+        cursor.execute(sql)  # Пробуем выполнить SQL запрос
+        result = cursor.fetchall()  # Получем результат запроса - двумерный список
     except:
         print("SQL request error")
         result = None
-    conn.close()
-    cursor.close()
-    conn.disconnect()
+    cursor.close()  # Закрываем курсор и сбрасываем результат
+    conn.close()  # Закрываем соединение с БД
     return result
 
 
-# Проверка соединения с БД
-@app.route('/test')
-def test_bd_connection():
-    if bd_connect() == None:
-        return "BD connection failed"
-    else:
-        return "BD connection success"
-
-
+# Функция для попадания в главное меню
 @app.route('/')
 def index():
     return render_template("menu.html")
 
 
+# request_1, 2 ... 6 - Функции, выполняеющие запросы,
+# после нажатия на соответствующую кнопку в главном меню
 @app.route('/request_1')
 def request_1():
     result = sql_request(__SQL_r1)
@@ -153,58 +149,57 @@ def request_6():
     return render_template("request_6.html", result=result)
 
 
+# Функция для создание отчетов.
+# Из формы ввода получаем введенный пользователем год и месяц требуемого отчета
 @app.route('/create_report', methods=['GET', 'POST'])
 def create_report():
     if request.method == 'POST':
-        year = request.form['year']
+        year = request.form['year']  # Получение из страницы введенного года и месяца
         month = request.form['month']
         conn = bd_connect()
         cursor = conn.cursor()
         try:
             cursor.execute("""CREATE TABLE otch1 (nul VARCHAR(20), id INT NOT NULL,
 s_year INT NOT NULL, s_month INT NOT NULL, 
-name VARCHAR(45) NOT NULL, count INT NOT NULL);""")
+name VARCHAR(45) NOT NULL, count INT NOT NULL);""")  # Пробуем создать таблицу для отчетов.
         except:
-            pass
+            pass  # Если она уже существеут, то запрос не выполняется
         try:
-            cursor.execute(__SQL_proc)
+            cursor.execute(__SQL_proc)  # Пробуем создать процедуру
         except:
-            pass
-        try:
+            pass  # Если она уже существеут, то запрос не выполняется
+        try:  # Пробуем вызвать процедуру с аргументами год и месяц
             for res in cursor.execute("call Blydo({}, {});".format(year, month), multi=True):
                 for row in res:
                     print(row[0])
         except:
             return "Can't call procedure with arguments '{}' and '{}'".format(year, month)
-        conn.commit()
-        conn.close()
+        conn.commit()  # Отправляем COMMIT для применения изменений в БД
         cursor.close()
-        conn.disconnect()
+        conn.close()
     return render_template("create_report.html")
 
 
+# Функция формирования страници для выбора отчета для просмотра
 @app.route('/choice_report')
 def choice_report():
-    # if request.method == 'POST':
-    #     year = request.form['year']
-    #     month = request.form['month']
-    #     print("Posted - {}-{}".format(year, month))
-    # else:
-    #     print("Get")
     return render_template("choice_report.html")
 
 
+# Фукция формирования страницы для просмотра отчета
+# Страница с выбором отчета передает год и месяц
 @app.route('/view_report', methods=['GET', 'POST'])
 def view_report():
     if request.method == 'POST':
         year = request.form['year']
         month = request.form['month']
-        try:
+        try:  # Пробуем вызвать SQL запрос с указанным годом и месяцем для вывода
             result = sql_request("""select * from otch1 where `s_year`={} AND `s_month`={};""".format(year, month))
         except:
             result = "None"
             return "Report doesn't exist"
     return render_template("view_report.html", result=result, year=year, month=month)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
